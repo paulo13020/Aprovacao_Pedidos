@@ -1,0 +1,64 @@
+﻿@model Aprovacao_Pedidos.ObjetosDeTransferencia.AprovacaoOTC;
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Pedidos</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/css/pedidos.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card card-container mt-5">
+                    <div class="card-body">
+                        <form method="post" class="form-search" asp-action="Incluir">
+                            <div class="form-group">
+                                <label for="numeroPedido">Número do Pedido</label>
+                                <input type="text" class="form-control" id="numeroPedido" name="numeroPedido" placeholder="Digite os números dos pedidos, separados por vírgula" pattern="^(\d+,)*\d+$" title="Somente números e vírgulas são permitidos, sem espaços" required />
+                            </div>
+
+                            <div class="form-group" >
+                                <label>Local de Conexão</label><br>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" id="saoJose" name="localConexao" value="SJC" required />
+                                    <label class="form-check-label" for="saoJose">São José dos Campos</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" id="minas" name="localConexao" value="MG" required />
+                                    <label class="form-check-label" for="minas">Sapucaí Mirim</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-lg btn-primary btn-block btn-search">Procurar</button>
+                            </div>
+
+                            @if(TempData["Erro"] != null)
+                            {
+                                <div>
+                                    <p class="alert alert-danger">@TempData["Erro"]</p>
+                                </div>
+                            }
+                        </form>
+                    </div>
+                </div>
+
+                @if (Model != null)
+                {
+                    <div id="partial-container">
+                        @Html.Partial("_CriarPedido", Model)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

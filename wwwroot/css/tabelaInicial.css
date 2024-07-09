@@ -1,0 +1,19 @@
+.status-aprovado {
+    background-color: green;
+    color: white;
+}
+
+.status-reprovado {
+    background-color: red;
+    color: white;
+}
+
+.status-pendente-comercial {
+    background-color: yellow;
+    color: black;
+}
+
+.status-pendente-diretoria {
+    background-color: orange;
+    color: black;
+}

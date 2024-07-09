@@ -1,0 +1,351 @@
+﻿@using Newtonsoft.Json
+@using Aprovacao_Pedidos.Enumeraveis
+@model Aprovacao_Pedidos.ObjetosDeTransferencia.PedidoOTC
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var usuarioEhComercial = User.IsInRole(TipoDePermissaoDeUsuario.Comercial.ToString());
+    var usuarioEhDiretoria = User.IsInRole(TipoDePermissaoDeUsuario.Diretoria.ToString());
+    var distribuidorStatus = Model.DISTRIBUIDOR ? "DISTRIBUIDOR" : "NÃO DISTRIBUIDOR";
+    bool isComercialOrDiretoria = usuarioEhComercial || usuarioEhDiretoria;
+    var existeObservacao = !string.IsNullOrEmpty(Model.Observacao);
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/css/pedidos.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Formulário -->
+            <div class="col-md-12">
+                <div class="card card-container">
+                    <div class="card-body">
+                        <form method="post" asp-action="SelecionarPedido">
+                            <div class="form-row">
+                                <div class="form-group col-md-5">
+                                    <label for="vendedor">Vendedor</label>
+                                    <input type="text" class="form-control" id="vendedor" asp-for="VENDEDOR" placeholder="Digite o nome do vendedor" readonly />
+                                    <input type="hidden" asp-for="VENDEDOR" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="numeroPedido">Número do Pedido</label>
+                                    <input type="text" class="form-control" id="numeroPedido" asp-for="NUM_PEDIDO" placeholder="Digite o número do pedido" readonly />
+                                    <input type="hidden" asp-for="NUM_PEDIDO" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="cidade">Cidade</label>
+                                    <input type="text" class="form-control" id="cidade" asp-for="CIDADE" placeholder="Digite a cidade" readonly />
+                                    <input type="hidden" asp-for="CIDADE" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label for="valorPedido">Valor do Pedido</label>
+                                    <input type="text" class="form-control valor-formatado" id="valorPedido" value="R$ @(Model.VALOR_DO_PEDIDO)" readonly />
+                                    <input type="hidden" asp-for="VALOR_DO_PEDIDO" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="valorTotalChaves">Valor Total de Chaves</label>
+                                    <input type="text" class="form-control valor-formatado" id="valorTotalChaves" value="R$ @(Model.VALOR_TOTAL_CHAVES)" readonly />
+                                    <input type="hidden" asp-for="VALOR_TOTAL_CHAVES" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="parcelasPdv">Parcelas no PDV</label>
+                                    <input type="number" class="form-control" id="parcelasPdv" asp-for="PDV_PARCELAS" placeholder="Digite o número de parcelas no PDV" readonly />
+                                    <input type="hidden" asp-for="PDV_PARCELAS" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="distribuidor">Distribuidor</label>
+                                    <input type="text" class="form-control" id="distribuidor" value="@distribuidorStatus" readonly />
+                                    <input type="hidden" asp-for="DISTRIBUIDOR" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label for="valorYale">Detalhamento do Pedido</label>
+                                    <input type="text" class="form-control" id="valorYale" asp-for="ValorYaleDetalhado" placeholder="Digite o valor da Yale" readonly />
+                                    <input type="hidden" asp-for="GavetasValor" />
+                                    <input type="hidden" asp-for="qtd_gaveta" />
+                                    <input type="hidden" asp-for="qtd_tetra" />
+                                    <input type="hidden" asp-for="qtd_plastica" />
+                                    <input type="hidden" asp-for="qtd_yale" />
+                                    <input type="hidden" asp-for="VALOR_YALE" />
+                                    <input type="hidden" asp-for="PlasticaValor" />
+                                    <input type="hidden" asp-for="TetrasValor" />
+                                    <input type="hidden" asp-for="valorPA" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                @if (isComercialOrDiretoria)
+                                {
+                                    <div class="form-group col-md-4">
+                                        <label for="aprovacao">Aprovação</label>
+                                        <select class="form-control" id="aprovacao" name="aprovacao" required>
+                                            <option value="" selected disabled>Selecione o status</option>
+                                            <option value="aprovar">Aprovar</option>
+                                            <option value="reprovar">Reprovar</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-8" id="motivoDiv" style="display:none;">
+                                        <label for="motivo">Motivo da Reprovação</label>
+                                        <textarea class="form-control" id="motivo" name="observacaoDeReprova" placeholder="Digite o motivo da reprovação"></textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    if (existeObservacao)
+                                    {
+                                        <div class="form-group col-md-2">
+                                            <label for="parcelasPdv">Status</label>
+                                            <input type="text" class="form-control" value="REPROVADO" readonly />
+                                        </div>
+                                        <div class="form-group col-md-10">
+                                            <label for="distribuidor">Observação</label>
+                                            <textarea class="form-control" id="motivo" asp-for="Observacao" readonly></textarea>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <hr />
+                            <div class="form-row">
+                                <div class="form-group col-12 d-flex justify-content-start">
+                                    @if (isComercialOrDiretoria)
+                                    {
+
+                                        if (Model.Status == TipoDeValorAConsiderarNoStatus.PendenteDeAprovacaoDiretoria && usuarioEhComercial)
+                                        {
+                                            <div class="form-group mr-2">
+                                                <button type="submit" class="btn btn-outline-dark" disabled>Enviar</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="form-group mr-2">
+                                                <button type="submit" class="btn btn-outline-success">Enviar</button>
+                                            </div>
+                                        }
+
+                                    }
+                                    <div class="form-group">
+                                        <a asp-action="Index" class="btn btn-outline-primary" asp-controller="Pedidos">Voltar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                @if (TempData["Erro"] != null)
+                {
+                    <div>
+                        <p class="alert alert-danger">@TempData["Erro"]</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <br />
+
+    <div class="row">
+        <div class="form-group col-6">
+            <div style="width: 50%; margin: auto;">
+                <label>Grafico de Valor</label>
+                <canvas id="graficoPizza1"></canvas>
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div style="width: 50%; margin: auto;">
+                <label>Grafico de Quantidade</label>
+                <canvas id="graficoPizza2"></canvas>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var valorFormatadoElements = document.querySelectorAll(".valor-formatado");
+
+                valorFormatadoElements.forEach(function (element) {
+                    var valor = parseFloat(element.value.replace('R$', '').trim());
+                    if (!isNaN(valor)) {
+                        element.value = 'R$ ' + valor.toFixed(2).replace('.', ',');
+                    }
+                });
+
+                var aprovacaoSelect = document.getElementById("aprovacao");
+                var motivoDiv = document.getElementById("motivoDiv");
+                var motivoTextarea = document.getElementById("motivo");
+
+                if (aprovacaoSelect) {
+                    aprovacaoSelect.addEventListener("change", function () {
+                        if (this.value === "reprovar") {
+                            motivoDiv.style.display = "block";
+                            motivoTextarea.setAttribute("required", "required");
+                        } else {
+                            motivoDiv.style.display = "none";
+                            motivoTextarea.removeAttribute("required");
+                        }
+                    });
+                }
+
+                var form = document.querySelector("form");
+
+                if (form) {
+                    form.addEventListener("submit", function (event) {
+                        if (!aprovacaoSelect.value) {
+                            aprovacaoSelect.setCustomValidity("Por favor, selecione um status.");
+                        } else {
+                            aprovacaoSelect.setCustomValidity("");
+                        }
+                    });
+                }
+
+                // Dados do modelo ou de onde você está obtendo os dados
+                var dados = {
+                    qtd_yale: @Html.Raw(JsonConvert.SerializeObject(Model.qtd_yale)),
+                    qtd_gaveta: @Html.Raw(JsonConvert.SerializeObject(Model.qtd_gaveta)),
+                    qtd_plastica: @Html.Raw(JsonConvert.SerializeObject(Model.qtd_plastica)),
+                    qtd_tetra: @Html.Raw(JsonConvert.SerializeObject(Model.qtd_tetra)),
+                    valorPA: @Html.Raw(JsonConvert.SerializeObject(Model.valorPA)),
+                    valor_yale: @Html.Raw(JsonConvert.SerializeObject(Model.VALOR_YALE)),
+                    valor_gaveta: @Html.Raw(JsonConvert.SerializeObject(Model.GavetasValor)),
+                    valor_plastica: @Html.Raw(JsonConvert.SerializeObject(Model.PlasticaValor)),
+                    valor_tetra: @Html.Raw(JsonConvert.SerializeObject(Model.TetrasValor)),
+                    resto: @Html.Raw(JsonConvert.SerializeObject(Model.resto))
+                            };
+
+                // Labels para os gráficos
+                var labels1 = ['Yale Comum', 'Gavetas', 'Plástica', 'Tetras', 'PA', 'PR'];
+                var labels2 = ['Yale Comum', 'Gavetas', 'Plástica', 'Tetras'];
+
+                // Função para calcular os valores para o primeiro gráfico
+                function calcularValores1() {
+                    return [
+                        (dados.qtd_yale ?? 0) * (dados.valor_yale ?? 0),
+                        (dados.qtd_gaveta ?? 0) * (dados.valor_gaveta ?? 0),
+                        (dados.qtd_plastica ?? 0) * (dados.valor_plastica ?? 0),
+                        (dados.qtd_tetra ?? 0) * (dados.valor_tetra ?? 0),
+                        dados.valorPA ?? 0,
+                        dados.resto ?? 0
+                    ];
+                }
+
+                // Função para calcular os valores para o segundo gráfico
+                function calcularValores2() {
+                    return [
+                        dados.qtd_yale ?? 0,
+                        dados.qtd_gaveta ?? 0,
+                        dados.qtd_plastica ?? 0,
+                        dados.qtd_tetra ?? 0
+                    ];
+                }
+
+                // Configuração do primeiro gráfico com Chart.js
+                var ctx1 = document.getElementById('graficoPizza1').getContext('2d');
+                if (ctx1) {
+                    var graficoPizza1 = new Chart(ctx1, {
+                        type: 'pie',
+                        data: {
+                            labels: labels1,
+                            datasets: [{
+                                data: calcularValores1(),
+                                backgroundColor: [
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)',
+                                    'rgba(255, 159, 64, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)',
+                                    'rgba(255, 159, 64, 0.8)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            var label = context.label || '';
+                                            var value = context.raw || 0;
+                                            return label + ': ' + value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Configuração do segundo gráfico com Chart.js
+                var ctx2 = document.getElementById('graficoPizza2').getContext('2d');
+                if (ctx2) {
+                    var graficoPizza2 = new Chart(ctx2, {
+                        type: 'pie',
+                        data: {
+                            labels: labels2,
+                            datasets: [{
+                                data: calcularValores2(),
+                                backgroundColor: [
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            var label = context.label || '';
+                                            var value = context.raw || 0;
+                                            return label + ': ' + value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

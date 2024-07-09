@@ -1,0 +1,95 @@
+﻿@using Aprovacao_Pedidos.Enumeraveis
+@model IEnumerable<Aprovacao_Pedidos.ObjetosDeTransferencia.AprovacaoOTC>
+
+@{
+    var tableClass = "table table-striped table-bordered table-hover";
+    var theadClass = "thead-dark";
+    var usuarioEhNormal = User.IsInRole(TipoDePermissaoDeUsuario.Normal.ToString());
+    string GetRowClass(string status)
+    {
+        switch (status)
+        {
+            case "Aprovado":
+                return "background-color: #11b310 !important; color:white !important";
+            case "Pendente de Aprovação Comercial":
+                return "background-color: #df7c24 !important; color:white !important";
+            case "Pendente de Aprovação Diretoria":
+                return "background-color: #df7c24 !important; color:white !important";
+            case "Reprovado":
+                return "background-color:#ff4152 !important; color:white !important";
+            default:
+                return "";
+        }
+    }
+}
+
+@if (usuarioEhNormal)
+{
+    <p>
+        <a asp-action="Incluir" class="btn btn-outline-primary" asp-controller="Pedidos">Novo Pedido</a>
+    </p>
+}
+
+
+
+@if (Model != null && Model.Any())
+{
+    <div class="card card-body">
+        <table class="@tableClass">
+            <thead class="@theadClass">
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ID)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Vendedor)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Data)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Status)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var rowClass = GetRowClass(item.Status);
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ID)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Vendedor)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Data)
+                        </td>
+                        <td style="@rowClass">
+                           @Html.DisplayFor(modelItem => item.Status)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Visualizar", "SelecionarPedido", new { id = item.ID }, new { @class = "btn btn-sm btn-primary" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>  
+}
+else
+{
+    <div>
+        <p class="alert alert-success">Não existem registros disponíveis</p>
+    </div>
+}
+
+
+@if (TempData["Erro"] != null)
+{
+    <div>
+        <p class="alert alert-danger">@TempData["Erro"]</p>
+    </div>
+}
